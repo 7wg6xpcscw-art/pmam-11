@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8" />
+    <title>Інтерактивні графіки та Моделювання</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        /* Базові стилі з вашого CSS */
+        body { font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333; padding: 20px; }
+        h1, h2 { text-align: center; }
+        .chart { max-width: 900px; margin: 40px auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* Стилі для форми */
+        .model-form {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: bold; margin-bottom: 5px; font-size: 14px;}
+        .form-group input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+
+        .form-actions { grid-column: 1 / -1; text-align: center; margin-top: 10px; }
+        button {
+            background-color: #007bff; color: #fff; border: none; padding: 10px 30px;
+            font-size: 16px; cursor: pointer; border-radius: 5px; transition: background 0.3s;
+        }
+        button:hover { background-color: #0056b3; }
+
+        /* Таблиці */
+        table { border-collapse: collapse; width: 100%; font-size: 14px; }
+        td, th { padding: 8px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .tables-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; max-width: 1200px; margin: 40px auto; }
+        .table-wrapper { flex: 1; min-width: 300px; background: white; padding: 15px; box-shadow: 0 0 8px rgba(0,0,0,0.1); border-radius: 4px; }
+        p.max-error { font-weight: bold; text-align: center; color: #d9534f; }
+    </style>
+</head>
+<body>
+    <h1>Інтерактивна система моделювання</h1>
+
+    {% for var in ['y1', 'y2', 'y3'] %}
+        <div class="chart">
+            <h2>{{ var }}(x) — Система диференціальних рівнянь</h2>
+            <div style="text-align:center;">
+                <label><input type="checkbox" id="toggle-{{ var }}" checked /> Показати лінію макс. похибки</label>
+            </div>
+            <div id="{{ var }}"></div>
+        </div>
+    {% endfor %}
+
+    <hr style="margin: 40px 0;">
+
+    <h2 id="sir-model">Моделювання епідемії (SIR Model)</h2>
+
+    <form method="POST" action="/#sir-model" class="model-form">
+        <div class="form-group">
+            <label>Beta (Швидкість зараження):</label>
+            <input type="number" step="0.001" name="beta" value="{{ params.beta }}" required>
+        </div>
+        <div class="form-group">
+            <label>Mu (Смертність/Одужання):</label>
+            <input type="number" step="0.001" name="mu" value="{{ params.mu }}" required>
+        </div>
+        <div class="form-group">
+            <label>R (Ефективність лікування):</label>
+            <input type="number" step="0.001" name="r" value="{{ params.r }}" required>
+        </div>
+        <div class="form-group">
+            <label>a (Коеф. насичення лікарень):</label>
+            <input type="number" step="0.001" name="a" value="{{ params.a }}" required>
+        </div>
+        <div class="form-group">
+            <label>Y (Імунітет/Вакцинація):</label>
+            <input type="number" step="0.001" name="Y" value="{{ params.Y }}" required>
+        </div>
+        <div class="form-group">
+            <label>Популяція:</label>
+            <input type="number" name="population" value="{{ params.population }}" required>
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Період часу (дні):</label>
+            <input type="number" name="T" value="{{ params.T }}" required>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">Перерахувати модель</button>
+        </div>
+    </form>
+
+    <div class="chart">
+        <div id="sir_combined"></div>
+    </div>
+
+    <div class="tables-container">
+        {% for var in ['y1', 'y2', 'y3'] %}
+        <div class="table-wrapper">
+            <h3>Похибки {{ var }}</h3>
+            <div style="max-height: 300px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr><th>x</th><th>Похибка</th><th>Лінії</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for e in deviations[var].errors %}
+                        <tr>
+                            <td>{{ e.x|round(2) }}</td>
+                            <td>{{ e.deviation|round(5) }}</td>
+                            <td>{{ e.lines[0] }}-{{ e.lines[1] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if deviations[var].max.deviation %}
+            <p class="max-error">
+                Max: {{ deviations[var].max.deviation|round(5) }} (x={{ deviations[var].max.x|round(2) }})
+            </p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+   <script>
+    const data = {{ results | tojson }};
+    const sir_data = {{ sir_results | tojson }};
+    const deviations = {{ deviations | tojson }};
+
+    // Побудова графіків Коші (y1, y2, y3)
+    ['y1', 'y2', 'y3'].forEach(function(varName) {
+        const traces = data[varName].map(item => ({
+            x: item.x, y: item.y, mode: 'lines', name: item.label
+        }));
+
+        const maxInfo = deviations[varName].max;
+        const layout = {
+            title: varName + '(x)', xaxis: { title: 'x' }, yaxis: { title: varName },
+            shapes: maxInfo && maxInfo.x !== null ? [{
+                type: 'line', x0: maxInfo.x, x1: maxInfo.x, y0: 0, y1: 1, yref: 'paper',
+                line: { color: 'red', width: 2, dash: 'dashdot' }
+            }] : []
+        };
+
+        Plotly.newPlot(varName, traces, layout).then(function() {
+            // Логіка чекбокса
+            const checkbox = document.getElementById('toggle-' + varName);
+            checkbox.addEventListener('change', () => {
+                const update = { shapes: checkbox.checked && maxInfo.x ? layout.shapes : [] };
+                Plotly.relayout(varName, update);
+            });
+        });
+    });
+
+    // Побудова графіка SIR
+    const sir_traces = [];
+    sir_data.forEach((item, index) => {
+        const label = item.label || `Sim ${index + 1}`;
+        sir_traces.push({
+            x: item.x, y: item.y_S, mode: 'lines',
+            name: `S (Вразливі)`, line: { color: 'blue', width: 1 }, opacity: 0.5, showlegend: index===0
+        });
+        sir_traces.push({
+            x: item.x, y: item.y_I, mode: 'lines',
+            name: `I (Хворі)`, line: { color: 'red', width: 2 }, showlegend: index===0
+        });
+    });
+
+    Plotly.newPlot('sir_combined', sir_traces, {
+        title: 'Динаміка епідемії (S vs I)',
+        xaxis: { title: 'Дні' },
+        yaxis: { title: 'Частка населення' }
+    });
+</script>
+
+</body>
+</html>

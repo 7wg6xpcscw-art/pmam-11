@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Editor JS</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</head>
+<body>
+    <nav class="green">
+        <div class="nav-wrapper container">
+            <span class="nav-header">Photo Editor JS</span>
+            <ul class="right image-save">
+                <button class="btn btn-flat blue white-text" onclick="saveImage()">Зберегти</button>
+                <button class="btn btn-flat red white-text" onclick="resetImage()">Скинути</button>
+            </ul>
+        </div>
+    </nav>
+
+    <img id="sourceImage" crossorigin="anonymous">
+
+    <div class="image-preview">
+        <canvas id="canvas" height="0"></canvas>
+    </div>
+
+    <div class="container app">
+        <div class="help-text center-align">
+            <h5>Завантажте зображення, щоб почати</h5>
+        </div>
+
+        <div class="image-controls">
+            <h6>Налаштування</h6>
+            <div class="row">
+                <div class="col s6">
+                    <span class="range-field">
+                        <label for="brightnessSlider">Яскравість</label>
+                        <input id="brightnessSlider" type="range" value="100" min="0" max="300" onchange="applyFilter()">
+                    </span>
+                </div>
+                <div class="col s6">
+                    <span class="range-field">
+                        <label for="contrastSlider">Контраст</label>
+                        <input id="contrastSlider" type="range" value="100" min="0" max="200" onchange="applyFilter()">
+                    </span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s6">
+                    <span class="range-field">
+                        <label for="grayscaleSlider">Чорно-біле</label>
+                        <input id="grayscaleSlider" type="range" value="0" min="0" max="100" onchange="applyFilter()">
+                    </span>
+                </div>
+                <div class="col s6">
+                    <span class="range-field">
+                        <label for="saturationSlider">Насиченість</label>
+                        <input id="saturationSlider" type="range" value="100" min="0" max="300" onchange="applyFilter()">
+                    </span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s6">
+                    <span class="range-field">
+                        <label for="sepiaSlider">Сепія</label>
+                        <input id="sepiaSlider" type="range" value="0" min="0" max="200" onchange="applyFilter()">
+                    </span>
+                </div>
+                <div class="col s6">
+                    <span class="range-field">
+                        <label for="hueRotateSlider">Відтінок</label>
+                        <input id="hueRotateSlider" type="range" value="0" min="0" max="360" onchange="applyFilter()">
+                    </span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col s6">
+                    <span class="range-field">
+                        <label for="blurSlider">Розмиття</label>
+                        <input id="blurSlider" type="range" value="0" min="0" max="10" step="0.1" onchange="applyFilter()">
+                    </span>
+                </div>
+                <div class="col s6">
+                    <span class="range-field">
+                        <label for="invertSlider">Інверсія</label>
+                        <input id="invertSlider" type="range" value="0" min="0" max="100" onchange="applyFilter()">
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="preset-filters">
+            <h6>Фільтри</h6>
+            <button class="btn green" onclick="brightenFilter()">Яскравий</button>
+            <button class="btn green" onclick="bwFilter()">Ч/Б</button>
+            <button class="btn green" onclick="funkyFilter()">Funky</button>
+            <button class="btn green" onclick="vintageFilter()">Вінтаж</button>
+        </div>
+
+        <div class="file-controls">
+            <h6>Файл</h6>
+            <a id="link"></a>
+            <div class="file-field input-field">
+                <div class="btn green">
+                    <span>Відкрити фото</span>
+                    <input type="file" accept="image/*" onchange="uploadImage(event)">
+                </div>
+                <div class="file-path-wrapper">
+                    <input class="file-path" type="text">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

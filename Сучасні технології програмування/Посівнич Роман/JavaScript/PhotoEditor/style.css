@@ -1,0 +1,27 @@
+.nav-header {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+.row {
+    margin-bottom: 0;
+}
+#sourceImage, .image-controls, .image-save, .preset-filters {
+    display: none;
+}
+.image-preview {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    background-color: #f5f5f5;
+    min-height: 100px;
+}
+#canvas {
+    max-height: 500px;
+    max-width: 100%;
+    object-fit: contain;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.app {
+    margin-top: 20px;
+    margin-bottom: 50px;
+}
