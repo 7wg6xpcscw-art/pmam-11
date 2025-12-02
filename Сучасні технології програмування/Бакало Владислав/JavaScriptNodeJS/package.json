@@ -1,0 +1,25 @@
+{
+  "name": "techstore",
+  "version": "1.0.0",
+  "description": "Інтернет-магазин техніки з фото та гарними шрифтами",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.22.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "магазин",
+    "e-commerce",
+    "nodejs",
+    "javascript"
+  ],
+  "author": "Student",
+  "license": "MIT"
+}
